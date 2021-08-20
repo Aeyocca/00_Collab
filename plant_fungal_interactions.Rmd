@@ -1,0 +1,61 @@
+---
+title: "Plant_fungal_interactions"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+#lets try clusterprofiler for some graphs
+```{r}
+#BiocManager::install("clusterProfiler")
+#BiocManager::install("org.At.tair.db")
+library(clusterProfiler)
+library(tidyverse)
+library(org.At.tair.db)
+
+#tutorial credit: https://hbctraining.github.io/DGE_workshop/lessons/09_functional_analysis.html
+
+wkdir="/path/to/files"
+
+allGenes = athal_go_table$Locus[-1]
+up_genes = read.table(file = paste0(wkdir,"/all_up_deg.txt"))
+dn_genes = read.table(file = paste0(wkdir,"/all_dn_deg.txt"))
+
+up_ego = enrichGO(gene = up_genes$V1, 
+                universe = allGenes,
+                keyType = "TAIR",
+                OrgDb = org.At.tair.db, 
+                ont = "BP", 
+                pAdjustMethod = "BH", 
+                qvalueCutoff = 0.05, 
+                readable = TRUE)
+
+up_summary = data.frame(up_ego)
+
+dn_ego = enrichGO(gene = dn_genes$V1, 
+                universe = allGenes,
+                keyType = "TAIR",
+                OrgDb = org.At.tair.db, 
+                ont = "BP", 
+                pAdjustMethod = "BH", 
+                qvalueCutoff = 0.05, 
+                readable = TRUE)
+dn_summary = data.frame(dn_ego)
+
+
+#lets plot these two and move on with life
+
+height = 8
+width = 8
+png(filename = paste0(wkdir,"/up_go_table.png"), res = 300, height = height, width = width, units = "in")
+  dotplot(up_ego, showCategory=10)
+  dev.off()
+
+height = 8
+width = 8
+png(filename = paste0(wkdir,"/dn_go_table.png"), res = 300, height = height, width = width, units = "in")
+  dotplot(dn_ego, showCategory=10)
+  dev.off()
+
+
+```
